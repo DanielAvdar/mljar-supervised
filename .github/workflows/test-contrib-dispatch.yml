@@ -1,0 +1,64 @@
+name: Contributor install test
+
+on:
+  workflow_dispatch:
+    inputs:
+      python-version:
+        description: 'Python version'
+        required: true
+        default: '3.8'
+      os:
+        description: 'Operating System'
+        required: true
+        default: 'ubuntu-latest'
+      method:
+        description: 'Method install python dependencies can be venv or poetry'
+        required: true
+        default: 'venv'
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ${{ github.event.inputs.os }} ]
+        python-version: [ ${{ github.event.inputs.python-version }} ]
+        method: [ ${{ github.event.inputs.method }} ]
+
+    steps:
+      - name: Install OS Dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install graphviz
+
+      - name: Install OS Dependencies
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install graphviz
+
+      - name: Install OS Dependencies
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install graphviz
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies traditionally with virtualenv
+        if: matrix.method == 'venv'
+        run: |
+          virtualenv venv 
+          source venv/bin/activate
+          pip install -r requirements.txt
+          pip install -r requirements_dev.txt
+          pytest
+      - name: Install dependencies with poetry
+        if: matrix.method == 'poetry'
+        run: |
+          pip install poetry
+          poetry install
+          poetry run pytest
+    continue-on-error: true
