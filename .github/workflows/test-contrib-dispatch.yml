@@ -19,36 +19,36 @@ on:
 jobs:
   build:
 
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ ${{ github.event.inputs.os }} ]
-        python-version: [ ${{ github.event.inputs.python-version }} ]
-        method: [ ${{ github.event.inputs.method }} ]
+    runs-on: ${{ github.event.inputs.os }}
+#    strategy:
+#      matrix:
+#        os: [ ${{ github.event.inputs.os }} ]
+#        python-version: [ ${{ github.event.inputs.python-version }} ]
+#        method: [ ${{ github.event.inputs.method }} ]
 
     steps:
       - name: Install OS Dependencies
-        if: matrix.os == 'ubuntu-latest'
+        if: ${{ github.event.inputs.os }} == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get -y install graphviz
 
       - name: Install OS Dependencies
-        if: matrix.os == 'macos-latest'
+        if: ${{ github.event.inputs.os }} == 'macos-latest'
         run: |
           brew install graphviz
 
       - name: Install OS Dependencies
-        if: matrix.os == 'windows-latest'
+        if: ${{ github.event.inputs.os }} == 'windows-latest'
         run: |
           choco install graphviz
       - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python ${{ github.event.inputs.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ github.event.inputs.python-version }}
       - name: Install dependencies traditionally with virtualenv
-        if: matrix.method == 'venv'
+        if: ${{ github.event.inputs.method }} == 'venv'
         run: |
           virtualenv venv 
           source venv/bin/activate
@@ -56,7 +56,7 @@ jobs:
           pip install -r requirements_dev.txt
           pytest
       - name: Install dependencies with poetry
-        if: matrix.method == 'poetry'
+        if: ${{ github.event.inputs.method }} == 'poetry'
         run: |
           pip install poetry
           poetry install
